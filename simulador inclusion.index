@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de accesibilidad educativa</title>
+<style>
+:root{
+  --navy:#123b63; --blue:#1769aa; --teal:#087f8c; --pale:#eef7fb;
+  --ink:#203449; --muted:#526779; --line:#d4e1e9; --white:#fff;
+  --green:#176b48; --green-bg:#e8f6ee; --amber:#8a5200; --amber-bg:#fff4dc;
+  --red:#963c32; --red-bg:#fff0ed; --shadow:0 8px 28px rgba(18,59,99,.09);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f8fb;color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.55}
+button,select,textarea{font:inherit}
+button:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #ffbf47;outline-offset:3px}
+header{background:linear-gradient(120deg,#123b63,#087f8c);color:white;padding:34px 20px}
+.hero{max-width:1050px;margin:auto}
+.eyebrow{text-transform:uppercase;letter-spacing:.1em;font-size:.78rem;font-weight:700;opacity:.9}
+h1{font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.15;margin:.4rem 0 .8rem}
+header p{max-width:760px;margin:0;font-size:1.05rem}
+main{max-width:1050px;margin:24px auto 56px;padding:0 18px}
+.progress-wrap{background:white;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:20px}
+.progress-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-weight:700;color:var(--navy);font-size:.92rem}
+.progress-track{height:9px;background:#e7eef3;border-radius:99px;overflow:hidden;margin-top:10px}
+.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--blue),#1ca6a0);transition:width .25s ease}
+.layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,.8fr);gap:20px;align-items:start}
+.card{background:white;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
+h2{font-size:1.35rem;color:var(--navy);margin:0 0 10px}
+h3{font-size:1.05rem;color:var(--navy);margin:20px 0 8px}
+.lead{color:var(--muted);margin-top:0}
+.pill{display:inline-block;background:#e5f3f5;color:#075d67;border-radius:99px;padding:4px 10px;font-size:.78rem;font-weight:700;margin-bottom:10px}
+.resource-visual{display:flex;gap:14px;align-items:center;background:var(--pale);border:1px solid #d8eaf2;border-radius:12px;padding:14px;margin:18px 0}
+.resource-icon{width:56px;height:56px;flex:0 0 56px;border-radius:14px;background:white;display:grid;place-items:center;font-size:1.8rem}
+.resource-visual strong{display:block;color:var(--navy)}
+.resource-visual p{margin:3px 0 0;font-size:.94rem}
+fieldset{border:0;padding:0;margin:20px 0}
+legend{font-weight:700;color:var(--navy);margin-bottom:10px}
+.option{display:flex;align-items:flex-start;gap:10px;padding:12px 13px;border:1px solid var(--line);border-radius:10px;margin:9px 0;cursor:pointer;background:white}
+.option:hover{border-color:#75a9c8;background:#f8fcfe}
+.option input{margin-top:5px;accent-color:var(--blue);flex:0 0 auto}
+.option span{display:block}
+.option small{display:block;color:var(--muted);margin-top:3px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.btn{border:0;border-radius:10px;padding:11px 17px;font-weight:700;cursor:pointer}
+.btn-primary{background:var(--blue);color:white}
+.btn-primary:hover{background:#10558d}
+.btn-secondary{background:#eaf1f6;color:var(--navy)}
+.btn-secondary:hover{background:#dce9f1}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.feedback{border-radius:11px;padding:14px 15px;margin-top:16px;border:1px solid transparent}
+.feedback.good{background:var(--green-bg);border-color:#b6dfc7;color:#174f38}
+.feedback.try{background:var(--amber-bg);border-color:#f0d38b;color:#704600}
+.feedback h3{margin:0 0 5px;color:inherit}
+.feedback p{margin:0}
+.side-card{margin-bottom:16px}
+.side-card ul{padding-left:20px;margin:8px 0}
+.side-card li{margin:7px 0}
+.note{font-size:.9rem;color:var(--muted)}
+.checklist label{display:flex;gap:10px;align-items:flex-start;margin:10px 0}
+.checklist input{margin-top:5px;accent-color:var(--teal)}
+.summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.metric{background:#f0f7fa;border:1px solid #dceaf0;border-radius:12px;padding:15px}
+.metric strong{font-size:1.7rem;color:var(--navy);display:block}
+.result-list{padding-left:20px}
+.result-list li{margin:9px 0}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:18px}
+[hidden]{display:none!important}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.card{padding:19px}.summary-grid{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hero">
+    <div class="eyebrow">Tecnología Educativa II · Unidad I</div>
+    <h1>Diseña una clase sin barreras</h1>
+    <p>Simulador de accesibilidad educativa. Asume el rol de docente y ayuda a María a mejorar una clase virtual sobre el cuidado del ambiente.</p>
+  </div>
+</header>
+<main>
+  <section class="progress-wrap" aria-label="Progreso de la actividad">
+    <div class="progress-top"><span id="progress-label">Paso 1 de 4 · Detectar y adaptar</span><span id="progress-count">0 de 4 recursos revisados</span></div>
+    <div class="progress-track" role="progressbar" aria-label="Progreso" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" id="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+  </section>
+
+  <div class="layout">
+    <section class="card" id="activity-panel" aria-live="polite">
+      <span class="pill" id="resource-type">Recurso 1</span>
+      <h2 id="resource-title">Video educativo sin subtítulos</h2>
+      <p class="lead" id="resource-description"></p>
+      <div class="resource-visual">
+        <div class="resource-icon" id="resource-icon" aria-hidden="true">🎬</div>
+        <div><strong id="resource-short">Recurso que necesita revisión</strong><p id="resource-context"></p></div>
+      </div>
+      <form id="decision-form">
+        <fieldset>
+          <legend>1. ¿Cuál es la barrera principal?</legend>
+          <div id="barrier-options"></div>
+        </fieldset>
+        <fieldset>
+          <legend>2. ¿Qué adaptación priorizarías?</legend>
+          <div id="solution-options"></div>
+        </fieldset>
+        <div class="actions">
+          <button class="btn btn-primary" id="check-btn" type="submit">Comprobar decisión</button>
+          <button class="btn btn-secondary" id="next-btn" type="button" hidden>Siguiente recurso →</button>
+        </div>
+      </form>
+      <div id="feedback" class="feedback" role="status" hidden></div>
+    </section>
+
+    <aside>
+      <section class="card side-card">
+        <h2>Tu misión</h2>
+        <p>Revisa los cuatro recursos de la clase de María. En cada uno:</p>
+        <ul>
+          <li>Identifica la barrera que puede dificultar el aprendizaje.</li>
+          <li>Selecciona una adaptación pertinente.</li>
+          <li>Lee la retroalimentación y ajusta tu criterio.</li>
+        </ul>
+        <p class="note">No se trata de etiquetar al estudiante, sino de reconocer barreras del recurso y ofrecer alternativas de acceso y participación.</p>
+      </section>
+      <section class="card side-card">
+        <h2>Criterios para recordar</h2>
+        <div class="checklist">
+          <label><input type="checkbox"> El objetivo de aprendizaje está claro.</label>
+          <label><input type="checkbox"> La información se ofrece en formatos accesibles.</label>
+          <label><input type="checkbox"> La actividad permite distintas formas de interacción.</label>
+          <label><input type="checkbox"> Se comprueba la accesibilidad antes de publicar.</label>
+        </div>
+        <p class="note">Marca estos criterios como recordatorio personal; no afectan la puntuación.</p>
+      </section>
+    </aside>
+  </div>
+
+  <section class="card" id="final-panel" hidden>
+    <span class="pill">Actividad completada</span>
+    <h2>Tu revisión de la clase de María</h2>
+    <p class="lead">Has terminado la primera revisión. Utiliza este resultado para decidir qué mejoras implementar y cómo comprobarlas con los estudiantes.</p>
+    <div class="summary-grid">
+      <div class="metric"><strong id="score-value">0/8</strong><span>Decisiones adecuadas</span></div>
+      <div class="metric"><strong id="percent-value">0%</strong><span>Resultado orientativo</span></div>
+    </div>
+    <h3>Plan de mejora sugerido</h3>
+    <ol class="result-list">
+      <li>Añadir subtítulos revisados al video y, cuando sea útil, una transcripción.</li>
+      <li>Proporcionar texto alternativo o una descripción textual de la información relevante de la infografía.</li>
+      <li>Ofrecer una alternativa al arrastre con ratón, como selección mediante teclado o botones accesibles.</li>
+      <li>Dividir las instrucciones en pasos numerados, con lenguaje claro y una estructura visual consistente.</li>
+    </ol>
+    <h3>Reflexiona antes de finalizar</h3>
+    <label for="reflection"><strong>¿Qué cambio priorizarías y cómo comprobarías que realmente ayuda a aprender?</strong></label>
+    <textarea id="reflection" rows="4" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;margin-top:8px" placeholder="Escribe aquí tu decisión y su justificación..."></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" id="download-btn" type="button">Descargar mi resumen (.txt)</button>
+      <button class="btn btn-secondary" id="restart-btn" type="button">Reiniciar simulador</button>
+    </div>
+    <p class="note">El resumen se genera en tu navegador. Esta versión no envía ni guarda tus respuestas en Moodle.</p>
+  </section>
+</main>
+<footer>Simulador formativo · Accesibilidad y diseño inclusivo · Tecnología Educativa II</footer>
+
+<script>
+const resources = [
+  {
+    type:"Recurso 1 de 4", title:"Video educativo sin subtítulos", icon:"🎬",
+    description:"María comparte un video que explica cómo reducir los residuos. La explicación esencial se transmite mediante la voz y no hay subtítulos ni transcripción.",
+    short:"Video con información oral", context:"La comprensión depende principalmente del audio.",
+    barriers:[
+      ["visual","Barrera visual","La información importante no tiene una alternativa visual."],
+      ["auditiva","Barrera auditiva","El contenido oral no cuenta con subtítulos ni transcripción."],
+      ["motora","Barrera motora","El recurso exige movimientos precisos para avanzar."]
+    ],
+    solutions:[
+      ["captions","Añadir subtítulos revisados y ofrecer una transcripción.","Permite acceder al contenido hablado por una vía textual."],
+      ["colors","Cambiar los colores de la página del video.","Puede mejorar el contraste, pero no resuelve la ausencia de texto."],
+      ["shorter","Acortar el video sin modificar el acceso al audio.","La duración no elimina la barrera principal."]
+    ],
+    barrier:"auditiva", solution:"captions",
+    explain:"La barrera principal es auditiva: la información se transmite oralmente sin una alternativa textual. Los subtítulos deben revisarse para corregir errores; una transcripción también puede ayudar."
+  },
+  {
+    type:"Recurso 2 de 4", title:"Infografía con información solo visual", icon:"🖼️",
+    description:"La infografía contiene un gráfico sobre residuos reciclados y etiquetas dentro de una imagen. El documento no incluye una descripción textual de los datos relevantes.",
+    short:"Gráfico sin descripción textual", context:"La información clave está incorporada en la imagen.",
+    barriers:[
+      ["visual","Barrera visual","Los datos esenciales no están disponibles en un formato alternativo."],
+      ["auditiva","Barrera auditiva","El recurso depende de una explicación oral sin subtítulos."],
+      ["cognitiva","Barrera de comprensión","Todas las instrucciones están reunidas en un párrafo extenso."]
+    ],
+    solutions:[
+      ["alttext","Añadir texto alternativo y una descripción textual de los datos del gráfico.","El texto alternativo identifica la imagen; la descripción ampliada comunica los datos y relaciones importantes."],
+      ["decor","Añadir más ilustraciones decorativas.","Aumenta los elementos visuales, pero no ofrece una alternativa accesible."],
+      ["color","Cambiar cada categoría a un color diferente sin etiquetas.","El color por sí solo no comunica la información a todas las personas."]
+    ],
+    barrier:"visual", solution:"alttext",
+    explain:"La barrera es visual porque los datos importantes solo aparecen en la imagen. Para un gráfico complejo, no basta con escribir “gráfico de reciclaje”: conviene describir los datos y la conclusión relevante."
+  },
+  {
+    type:"Recurso 3 de 4", title:"Actividad que exige arrastrar con el ratón", icon:"🖱️",
+    description:"Para clasificar residuos, el estudiante debe arrastrar cada imagen hasta una categoría. La actividad no permite usar el teclado ni ofrece un método alternativo.",
+    short:"Interacción limitada al ratón", context:"La forma de responder puede impedir demostrar lo aprendido.",
+    barriers:[
+      ["motor","Barrera motora","La actividad exige una interacción precisa con el ratón."],
+      ["auditiva","Barrera auditiva","Las instrucciones habladas no tienen subtítulos."],
+      ["visual","Barrera visual","Las imágenes no tienen descripción textual."]
+    ],
+    solutions:[
+      ["keyboard","Ofrecer selección por teclado o botones accesibles como alternativa al arrastre.","Permite completar la tarea sin depender de movimientos precisos con el ratón."],
+      ["timer","Reducir el tiempo disponible para responder.","Aumenta la presión y no elimina la barrera de interacción."],
+      ["animation","Añadir animaciones al arrastrar cada objeto.","No proporciona otra forma de operar la actividad."]
+    ],
+    barrier:"motor", solution:"keyboard",
+    explain:"La barrera motora surge de exigir una interacción específica. La alternativa debe permitir realizar la misma tarea y demostrar el mismo aprendizaje, sin imponer una única forma de manipulación."
+  },
+  {
+    type:"Recurso 4 de 4", title:"Instrucciones en un párrafo extenso", icon:"📝",
+    description:"Las instrucciones incluyen seis acciones en un solo párrafo, con frases largas y sin numeración. No se distinguen los pasos ni el producto que debe entregar el estudiante.",
+    short:"Instrucciones difíciles de seguir", context:"La organización del contenido puede dificultar la comprensión.",
+    barriers:[
+      ["cognitive","Barrera de comprensión y organización","Los pasos no están separados y la información es difícil de localizar."],
+      ["motor","Barrera motora","La tarea requiere arrastrar objetos con el ratón."],
+      ["auditiva","Barrera auditiva","El contenido de un video no tiene subtítulos."]
+    ],
+    solutions:[
+      ["steps","Dividir las instrucciones en pasos numerados, usar lenguaje claro y destacar la entrega esperada.","Hace más visible la secuencia de acciones y facilita consultar cada paso."],
+      ["decor","Agregar imágenes decorativas entre las frases.","No aclara el orden de las acciones ni el producto esperado."],
+      ["longer","Añadir más explicaciones en el mismo párrafo.","Puede aumentar la carga de lectura sin mejorar la organización."]
+    ],
+    barrier:"cognitive", solution:"steps",
+    explain:"La dificultad está en la estructura y claridad de las instrucciones. Organizar la tarea en pasos no significa reducir el objetivo, sino facilitar que el estudiante comprenda qué hacer y en qué orden."
+  }
+];
+
+let index=0, answers=[], attempts=0, currentChecked=false;
+const $=id=>document.getElementById(id);
+function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function renderOptions(containerId, options, groupName, correctValue){
+  const container=$(containerId);
+  container.innerHTML=options.map((o,i)=>`<label class="option"><input type="radio" name="${groupName}" value="${o[0]}" ${i===0?"":""}><span><strong>${escapeHTML(o[1])}</strong><small>${escapeHTML(o[2])}</small></span></label>`).join("");
+}
+function render(){
+  const r=resources[index];
+  $("resource-type").textContent=r.type;
+  $("resource-title").textContent=r.title;
+  $("resource-description").textContent=r.description;
+  $("resource-icon").textContent=r.icon;
+  $("resource-short").textContent=r.short;
+  $("resource-context").textContent=r.context;
+  renderOptions("barrier-options",r.barriers,"barrier");
+  renderOptions("solution-options",r.solutions,"solution");
+  $("feedback").hidden=true;
+  $("next-btn").hidden=true;
+  $("check-btn").hidden=false;
+  $("check-btn").disabled=false;
+  currentChecked=false;
+  $("progress-label").textContent=`Paso ${index+1} de 4 · Detectar y adaptar`;
+  $("progress-count").textContent=`${answers.length} de 4 recursos revisados`;
+  $("progress-bar").style.width=`${answers.length/4*100}%`;
+  $("progress-track").setAttribute("aria-valuenow",answers.length);
+  $("activity-panel").hidden=false;
+  $("final-panel").hidden=true;
+}
+function getSelected(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:null;}
+$("decision-form").addEventListener("submit",e=>{
+  e.preventDefault();
+  if(currentChecked)return;
+  const r=resources[index], barrier=getSelected("barrier"), solution=getSelected("solution");
+  if(!barrier||!solution){
+    $("feedback").className="feedback try";
+    $("feedback").innerHTML="<h3>Completa las dos decisiones</h3><p>Selecciona la barrera principal y la adaptación que consideras más adecuada.</p>";
+    $("feedback").hidden=false;return;
+  }
+  const barrierOK=barrier===r.barrier, solutionOK=solution===r.solution;
+  const points=(barrierOK?1:0)+(solutionOK?1:0);
+  answers[index]={title:r.title,barrier,solution,barrierOK,solutionOK,points};
+  attempts++;
+  currentChecked=true;
+  document.querySelectorAll('#decision-form input').forEach(el=>el.disabled=true);
+  $("check-btn").hidden=true;
+  $("next-btn").hidden=false;
+  $("next-btn").textContent=index===resources.length-1?"Ver resumen final →":"Siguiente recurso →";
+  const fb=$("feedback");
+  fb.className="feedback "+(points===2?"good":"try");
+  fb.innerHTML=`<h3>${points===2?"¡Decisión adecuada!":"Revisa tu decisión"}</h3><p>${escapeHTML(r.explain)}</p><p style="margin-top:8px"><strong>Resultado:</strong> ${barrierOK?"Barrera identificada correctamente.":"La barrera principal necesita revisión."} ${solutionOK?"Adaptación pertinente.":"Considera una adaptación que elimine la barrera identificada."}</p>`;
+  fb.hidden=false;
+  $("progress-count").textContent=`${answers.length} de 4 recursos revisados`;
+});
+$("next-btn").addEventListener("click",()=>{
+  if(index<resources.length-1){index++;render();window.scrollTo({top:0,behavior:"smooth"});}
+  else showFinal();
+});
+function showFinal(){
+  $("activity-panel").hidden=true;
+  $("final-panel").hidden=false;
+  const score=answers.reduce((sum,a)=>sum+(a?a.points:0),0);
+  $("score-value").textContent=`${score}/8`;
+  $("percent-value").textContent=`${Math.round(score/8*100)}%`;
+  $("progress-label").textContent="Actividad completada";
+  $("progress-count").textContent="4 de 4 recursos revisados";
+  $("progress-bar").style.width="100%";
+  $("progress-track").setAttribute("aria-valuenow",4);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$("restart-btn").addEventListener("click",()=>{
+  index=0;answers=[];attempts=0;
+  document.querySelectorAll('.checklist input').forEach(c=>c.checked=false);
+  $("reflection").value="";
+  render();window.scrollTo({top:0,behavior:"smooth"});
+});
+$("download-btn").addEventListener("click",()=>{
+  const score=answers.reduce((sum,a)=>sum+(a?a.points:0),0);
+  const lines=[
+    "SIMULADOR DE ACCESIBILIDAD EDUCATIVA",
+    "Tecnología Educativa II · Unidad I",
+    "",
+    `Resultado orientativo: ${score}/8 (${Math.round(score/8*100)}%)`,
+    "",
+    "REVISIÓN DE RECURSOS",
+    ...answers.map((a,i)=>`${i+1}. ${a.title}\n   Barrera: ${a.barrier} — ${a.barrierOK?"adecuada":"revisar"}\n   Adaptación: ${a.solution} — ${a.solutionOK?"adecuada":"revisar"}\n`),
+    "REFLEXIÓN",
+    $("reflection").value.trim()||"No se escribió una reflexión.",
+    "",
+    "Nota: resultado formativo; no sustituye la revisión con estudiantes y tecnologías de apoyo."
+  ];
+  const blob=new Blob([lines.join("\n")],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="resumen-simulador-accesibilidad.txt";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+});
+render();
+</script>
+</body>
+</html>
